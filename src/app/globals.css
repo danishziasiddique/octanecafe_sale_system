@@ -1,0 +1,91 @@
+@import 'tailwindcss';
+
+/*
+ * Brand tokens sampled from the logo artwork.
+ * In Tailwind v4 there is no tailwind.config.js — anything declared in
+ * `@theme` becomes a utility class. `--color-octane` here is what makes
+ * `bg-octane`, `text-octane`, `border-octane` etc. exist.
+ */
+@theme {
+  --color-octane: #f46f02;
+  --color-octane-dim: #c25a02;
+  --color-cream: #fffff7;
+
+  --color-coal-950: #0a0a0b;
+  --color-coal-900: #121214;
+  --color-coal-800: #1b1b1f;
+  --color-coal-700: #2a2a30;
+
+  --font-display: var(--font-oswald), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--color-coal-950);
+  color: var(--color-cream);
+}
+
+/* Numbers in a bill must line up in columns, so use tabular figures. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * ---- Receipt paper width -------------------------------------------------
+ * Running 58mm paper instead of 80mm? Change this one value. It sizes the
+ * on-screen receipt AND is read by printReceipt() to build the @page rule,
+ * so it is the only place the paper width is defined.
+ */
+:root {
+  --receipt-width: 80mm;
+}
+
+.receipt-sheet {
+  width: var(--receipt-width);
+}
+
+/*
+ * Thermal receipt printing.
+ * The @page size is what actually tells the printer the paper width;
+ * everything else here strips the app UI so only the receipt prints.
+ */
+@media print {
+  /*
+   * No `size` here on purpose. The exact page size is injected at print time
+   * by printReceipt() in src/lib/print.ts, because the height depends on how
+   * many items are on the bill. `size: 80mm auto` looks right but is invalid
+   * CSS and silently falls back to Letter.
+   */
+  @page {
+    margin: 0;
+  }
+
+  html,
+  body {
+    width: var(--receipt-width);
+    background: #fff;
+    color: #000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .receipt-sheet {
+    padding: 4mm 3mm;
+    color: #000;
+    background: #fff;
+  }
+
+  /*
+   * Browsers drop background graphics when printing to save ink. The logo is
+   * an <img> so it survives, but this keeps any bordered or filled element on
+   * the bill rendering as designed.
+   */
+  .receipt-sheet * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
